@@ -26,62 +26,77 @@ class App extends React.Component {
       : marked.setOptions({ breaks: false });
   };
 
-  handleClick1 = (event) => {
-    console.log(event.target.id);
-    const input = document.getElementById('input-field');
-    const preview = document.getElementById('preview-field');
-    console.log("handleClick11111 runned!");
+  handleClick1 = () => {
+    // console.log(event.target.id);
+    const input = document.getElementById("input-field");
+    const preview = document.getElementById("preview-field");
+    const icon = document.getElementById("icon1");
+    // console.log("handleClick11111 runned!");
     if (!this.state.inputExpand) {
-      input.className += ' areaExpand';
-      preview.className += ' displayNone';
-      this.setState({inputExpand: true});
+      input.className += " areaExpand";
+      preview.className += " displayNone";
+      icon.className = "fa-solid fa-up-right-and-down-left-from-center";
+      this.setState({ inputExpand: true });
     } else {
-      input.className = 'inputField';
-      preview.className = 'previewField';
-      this.setState({inputExpand: false});
+      input.className = "inputField";
+      preview.className = "previewField";
+      icon.className = "fa-solid fa-maximize";
+      this.setState({ inputExpand: false });
     }
-    /* switch (option) {
-      case "input":
-        this.setState({ inputExpand: !(this.state.inputExpand)});
-        console.log('here I am the first button!');
-        break;
-      case "preview":
-        this.setState({ previewExpand: !this.state.previewExpand });
-        break;
-      default:
-        break;*/
-    }
-  
-  handleClick2 = () => {
-    console.log("handleClick2222 runned!");
-    const input = document.getElementById('input-field');
-    const preview = document.getElementById('preview-field');
-    console.log("handleClick11111 runned!");
-    if (!this.state.previewExpand) {
-      preview.className += ' areaExpand';
-      input.className += ' displayNone';
-      this.setState({previewExpand: true});
-    } else {
-      input.className = 'inputField';
-      preview.className = 'previewField';
-      this.setState({previewExpand: false});
-    }
-  }
+  };
 
- /* componentDidMount() {
-    const input = document.getElementById('input-field');
-    const preview = document.getElementById('preview-field');
-    if (this.state.inputExpand) {
-      input.className += ' areaExpand';
-      preview.className += ' displayNone'; 
-    } else if (this.state.previewExpand) {
-      input.className += ' displayNone';
-      preview.className += ' areaExpand';
+  handleClick2 = () => {
+    // console.log("handleClick2222 runned!");
+    const input = document.getElementById("input-field");
+    const preview = document.getElementById("preview-field");
+    const icon = document.getElementById("icon2");
+    // console.log("handleClick11111 runned!");
+    if (!this.state.previewExpand) {
+      preview.className += " areaExpand";
+      input.className += " displayNone";
+      icon.className = "fa-solid fa-up-right-and-down-left-from-center";
+      this.setState({ previewExpand: true });
     } else {
-      input.className = 'inputField';
-      preview.className = 'previewField';
+      input.className = "inputField";
+      preview.className = "previewField";
+      icon.className = "fa-solid fa-maximize";
+      this.setState({ previewExpand: false });
     }
-  }*/
+  };
+
+  handleDownload = () => {
+    const pageHTML = document.getElementById("preview-content").innerHTML;
+    const blob = new Blob([pageHTML], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const tempEl = document.createElement("a");
+    document.body.appendChild(tempEl);
+    tempEl.href = url;
+    tempEl.download = "markdown-preview.html";
+    tempEl.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      tempEl.parentNode.removeChild(tempEl);
+    }, 2000);
+  };
+
+  handleKeyDown = (event) => {
+    if (event.keyCode === 9) {
+      // tab was pressed
+      event.preventDefault();
+      let val = this.state.input,
+        start = event.target.selectionStart,
+        end = event.target.selectionEnd;
+      this.setState(
+        {
+          input: val.substring(0, start) + "\t" + val.substring(end),
+        },
+        () => {
+          const textarea = document.getElementById("input-content");
+          textarea.selectionStart = textarea.selectionEnd = start + 1;
+        }
+      );
+    }
+  };
 
   render() {
     return (
@@ -95,23 +110,31 @@ class App extends React.Component {
                 <option value="breaks">Breaks sensitive</option>
               </select>
             </div>
-              {/* <button className="toggleView1" ></button> */}
-              <i id='icon1' className="fa-solid fa-maximize" onClick={this.handleClick1}></i>
+            <i
+              id="icon1"
+              className="fa-solid fa-maximize"
+              onClick={this.handleClick1}
+            ></i>
           </div>
           <textarea
             id="input-content"
             onChange={this.handleChange}
             value={this.state.input}
+            onKeyDown={this.handleKeyDown}
           />
         </div>
-        {/* {jsx} */}
         <div id="preview-field" className="previewField">
           <div id="top-menu2">
-              <i id='icon2' className="fa-solid fa-maximize" onClick={this.handleClick2}></i>
+            <button onClick={this.handleDownload}>Download</button>
+            <i
+              id="icon2"
+              className="fa-solid fa-maximize"
+              onClick={this.handleClick2}
+            ></i>
           </div>
-          <div className='previewContent'>
+          <div id="preview-content" className="previewContent">
             {parse(DOMPurify.sanitize(marked.parse(this.state.input)))}
-          </div>  
+          </div>
         </div>
       </div>
     );
